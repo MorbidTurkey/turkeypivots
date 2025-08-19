@@ -16,6 +16,8 @@ plotly
 requests
 python-dotenv
 langchain
+pydantic-ai
+openai
 
 # Server
 gunicorn

@@ -13,8 +13,12 @@ venv/
 env/
 turkeypivot/
 
-# Environment variables
+# Environment variables and API keys
 .env
+.env.*
+*api_key*
+*apikey*
+secrets/
 
 # Temporary files
 temp/
@@ -25,6 +29,13 @@ temp/
 tests/
 test_*.py
 *_test.py
+test_env.py
+test_ai.py
+test_enhanced_ai.py
+test_fallback.py
+test_migration.py
+test_simple_ai.py
+test_social_media_ai.py
 
 # IDE specific files
 .idea/
@@ -49,8 +60,15 @@ logs/
 
 # Old versions of files
 *_old_version.py
+*_revised.py
 app_old_version.py
-app.py
+app_revised.py
+
+# Specific file exclusions - Ollama related
+src/simple_ai_assistant.py  # Ollama-based assistant
+src/enhanced_ai_assistant.py  # Another Ollama-based assistant
+*ollama*.py  # Any Ollama-related Python files
+.ollama/  # Ollama directory if present
 
 # Test data
 *.sample
