@@ -1,0 +1,192 @@
+/* Custom CSS for Turkey Pivots */
+
+/* Base styling for chat messages */
+.chat-message {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    max-width: 100%;
+    word-break: break-word;
+}
+
+.user-message {
+    background-color: #f2f7ff;
+    border-left: 4px solid #4285f4;
+}
+
+.ai-message {
+    background-color: #f5f5f5;
+    border-left: 4px solid #34a853;
+}
+
+.error-message {
+    background-color: #fff0f0;
+    border-left: 4px solid #ea4335;
+}
+
+/* Card styling */
+.card {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.125) !important;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 0.75rem 1.25rem !important;
+    font-weight: 500;
+}
+
+.card-body {
+    padding: 1.25rem !important;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 0.3rem;
+    transition: all 0.2s ease-in-out;
+    font-weight: 500;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Table styling */
+.dash-table-container {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner th {
+    font-weight: 600;
+    color: #333;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.dash-spreadsheet-container .dash-spreadsheet-inner th,
+.dash-spreadsheet-container .dash-spreadsheet-inner td {
+    padding: 8px !important;
+    font-size: 0.9rem;
+}
+
+/* Improve chart containers */
+.js-plotly-plot {
+    margin-bottom: 0.5rem;
+}
+
+/* Style insights text */
+.text-muted.small {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-top: 0.5rem !important;
+}
+
+/* Column configuration styling */
+.col-config {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Upload area styling */
+.upload-area {
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.upload-area:hover {
+    border-color: #4285f4 !important;
+    background-color: #f2f7ff;
+}
+
+/* Loading indicators */
+.loading-spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    vertical-align: text-bottom;
+    border: 0.25em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border 0.75s linear infinite;
+}
+
+@keyframes spinner-border {
+    to { transform: rotate(360deg); }
+}
+
+/* Fix for dropdown positioning */
+.Select-menu-outer {
+    z-index: 9999 !important;
+}
+
+/* Dropdown styling */
+.Select-control {
+    border-radius: 0.3rem;
+    border: 1px solid #ced4da;
+}
+
+.Select-control:hover {
+    border-color: #b0b5ba;
+}
+
+.Select.is-focused:not(.is-open) > .Select-control {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Button spacing in chart headers */
+.btn-group .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Fix modal z-index */
+.modal {
+    z-index: 1050;
+}
+
+/* Status indicators */
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.status-success {
+    background-color: #34a853;
+}
+
+.status-warning {
+    background-color: #fbbc05;
+}
+
+.status-error {
+    background-color: #ea4335;
+}
+
+/* Collapse animation */
+.collapse {
+    transition: height 0.35s ease;
+}
+
+/* Make font awesome icons work better */
+.fa {
+    font-size: 0.9rem;
+    min-width: 1rem;
+    text-align: center;
+}

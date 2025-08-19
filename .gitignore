@@ -1,0 +1,57 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environment
+venv/
+env/
+turkeypivot/
+
+# Environment variables
+.env
+
+# Temporary files
+temp/
+.temp/
+*.tmp
+
+# Test files
+tests/
+test_*.py
+*_test.py
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Backup files
+backups/
+*.bak
+
+# Log files
+logs/
+*.log
+
+# Database files
+*.db
+*.sqlite3
+
+# Old versions of files
+*_old_version.py
+app_old_version.py
+app.py
+
+# Test data
+*.sample
+sample_*

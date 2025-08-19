@@ -1,0 +1,27 @@
+# Core web framework
+dash
+dash-bootstrap-components
+dash-ag-grid
+
+# Data processing
+pandas
+numpy
+openpyxl
+xlrd
+
+# Visualization
+plotly
+
+# AI and ML
+requests
+python-dotenv
+langchain
+
+# Server
+gunicorn
+flask
+
+# Utilities
+markdown
+pyyaml
+python-dateutil

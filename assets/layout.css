@@ -1,0 +1,73 @@
+/* Additional layout improvements for Turkey Pivots */
+
+/* Make charts responsive */
+.js-plotly-plot, .plotly, .plot-container {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 400px !important;
+}
+
+/* Ensure chart SVGs expand properly */
+.main-svg {
+    width: 100% !important;
+}
+
+/* Better card layout for chart windows */
+.chart-window {
+    transition: all 0.3s ease;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Make table data more readable */
+.dash-table-container .dash-spreadsheet-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+}
+
+/* Fix modal scrolling issues */
+.modal-body {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Responsive column improvements */
+@media (min-width: 992px) {
+    .chart-col {
+        padding: 0 10px;
+    }
+}
+
+@media (max-width: 991px) {
+    .chart-col {
+        padding: 0 5px;
+    }
+}
+
+/* Better graph positioning */
+.js-plotly-plot .plot-container.plotly {
+    position: relative;
+    width: 100%;
+}
+
+/* Tooltip improvements */
+.plotly-notifier {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+/* Improve data table filtering UI */
+.dash-filter input, .dash-filter select {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 6px;
+}
+
+/* Make modebar tools more visible */
+.modebar-container {
+    opacity: 0.6 !important;
+}
+
+.modebar-container:hover {
+    opacity: 1 !important;
+}
