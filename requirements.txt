@@ -18,6 +18,7 @@ python-dotenv
 langchain
 pydantic-ai
 openai
+pydantic
 
 # Server
 gunicorn
