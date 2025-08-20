@@ -51,8 +51,18 @@ app.title = "Turkey Pivots - Data Visualization Dashboard"
 # --- Initialize Components ---
 data_processor = DataProcessor()
 chart_generator = ChartGenerator()
-ai_assistant = AIAssistant(model_name="gpt-oss:20b")
 db_manager = DatabaseManager()
+
+# Initialize AI Assistant - Try OpenAI first, fallback to SimpleAI
+try:
+    from src.openai_assistant import OpenAIAssistant
+    ai_assistant = OpenAIAssistant(model_name="gpt-4o-mini")
+    print("Using OpenAI AI Assistant with gpt-4o-mini")
+except (ImportError, ValueError) as e:
+    # Fallback to SimpleAIAssistant
+    from src.simple_ai_assistant import SimpleAIAssistant as AIAssistant
+    ai_assistant = AIAssistant(model_name="gpt-oss:20b")
+    print(f"Using Ollama AI Assistant (reason for OpenAI fallback: {str(e)})")
 
 # --- App Layout ---
 app.layout = dbc.Container([
@@ -1547,11 +1557,22 @@ if __name__ == '__main__':
     
     # Test AI connection
     print("🦃 Starting Turkey Pivots...")
-    if ai_assistant.test_ollama_connection():
-        print(f"✅ AI Assistant ready with {ai_assistant.model_name}")
+    
+    # Check what type of AI assistant we're using
+    if hasattr(ai_assistant, 'test_openai_connection'):
+        # Using OpenAI
+        if ai_assistant.test_openai_connection():
+            print(f"✅ OpenAI Assistant ready with {ai_assistant.model_name}")
+        else:
+            print("⚠️  OpenAI connection failed - will use rule-based parsing")
+            ai_assistant.ai_provider = "rules"
     else:
-        print("⚠️  AI Assistant will use rule-based parsing (Ollama not available)")
-        ai_assistant.ai_provider = "rules"  # Fallback to rules
+        # Using Ollama
+        if ai_assistant.test_ollama_connection():
+            print(f"✅ AI Assistant ready with {ai_assistant.model_name}")
+        else:
+            print("⚠️  AI Assistant will use rule-based parsing (Ollama not available)")
+            ai_assistant.ai_provider = "rules"  # Fallback to rules
     
     # Get port from environment variable (for Render compatibility)
     port = int(os.environ.get("PORT", 8050))
