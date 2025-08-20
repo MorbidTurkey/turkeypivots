@@ -1039,20 +1039,16 @@ def handle_file_upload(contents, filename, session_data):
             df = data_processor.process_upload(contents, filename)
             columns = list(df.columns)
             print(f"Successfully processed {filename} with columns: {columns}")
-            
             # Save data temporarily
             session_id = str(uuid.uuid4())
             file_path = f"temp/{session_id}.parquet"
             os.makedirs("temp", exist_ok=True)
-            
-            # Try to save as parquet, fallback to pickle if needed
             try:
                 df.to_parquet(file_path)
             except Exception as parquet_error:
                 print(f"Parquet save failed, using pickle: {parquet_error}")
                 file_path = f"temp/{session_id}.pkl"
                 df.to_pickle(file_path)
-            
             session_data = session_data or {}
             session_data.update({
                 'session_id': session_id,
@@ -1060,14 +1056,12 @@ def handle_file_upload(contents, filename, session_data):
                 'columns': columns,
                 'file_path': file_path
             })
-            
             success_message = dbc.Alert(
                 f"Successfully uploaded {filename}! Now configure your data columns.", 
                 color="success",
                 duration=4000  # Show for 4 seconds
             )
             return session_data, success_message
-        
         except Exception as e:
             print(f"Error processing file {filename}: {str(e)}")
             traceback.print_exc()
@@ -1076,8 +1070,8 @@ def handle_file_upload(contents, filename, session_data):
                 color="danger",
                 duration=6000  # Show error for 6 seconds
             )
-            return session_data, error_message
-    
+            return dash.no_update, error_message
+    # Only update session-data if contents is not None
     return dash.no_update, ""
 
 # --- Column Configuration Callback ---
@@ -1103,16 +1097,18 @@ def handle_continue_to_dashboard(n_clicks, session_data, column_types, column_id
             col_type = column_types[i] if column_types and i < len(column_types) else 'categorical'
             col_desc = column_descs[i] if column_descs and i < len(column_descs) else ""
             col_display = column_names[i] if column_names and i < len(column_names) else col_name
-            
             column_metadata[col_name] = {
                 'type': col_type,
                 'description': col_desc,
                 'display_name': col_display
             }
-        
-        session_data['configured'] = True
-        print(f"Moving to dashboard with column metadata")
-        return session_data, column_metadata
+        # Only update session_data if not already configured
+        if not session_data.get('configured'):
+            session_data['configured'] = True
+            print(f"Moving to dashboard with column metadata")
+            return session_data, column_metadata
+        else:
+            return dash.no_update, column_metadata
     return dash.no_update, {}
 
 # --- Back to Config Callback ---
@@ -1128,7 +1124,9 @@ def handle_back_to_config(n_clicks, session_data):
     if n_clicks:
         if session_data and 'configured' in session_data:
             session_data.pop('configured', None)
-        return session_data
+            return session_data
+        else:
+            return dash.no_update
     return dash.no_update
 
 # --- AI Chat Callback ---
