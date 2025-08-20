@@ -1078,7 +1078,7 @@ def handle_file_upload(contents, filename, session_data):
             )
             return session_data, error_message
     
-    return session_data, ""
+    return dash.no_update, ""
 
 # --- Column Configuration Callback ---
 
@@ -1113,7 +1113,7 @@ def handle_continue_to_dashboard(n_clicks, session_data, column_types, column_id
         session_data['configured'] = True
         print(f"Moving to dashboard with column metadata")
         return session_data, column_metadata
-    return session_data, {}
+    return dash.no_update, {}
 
 # --- Back to Config Callback ---
 
