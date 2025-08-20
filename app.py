@@ -39,6 +39,7 @@ def get_theme_url(theme_name):
     """Convert theme name to Bootstrap theme URL"""
     return getattr(dbc.themes, theme_name.upper(), dbc.themes.FLATLY)
 
+
 # --- Initialize Dash App ---
 app = dash.Dash(
     __name__, 
@@ -47,6 +48,9 @@ app = dash.Dash(
     meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}]
 )
 app.title = "Turkey Pivots - Data Visualization Dashboard"
+
+# Expose server for WSGI (Gunicorn)
+server = app.server
 
 # --- Initialize Components ---
 data_processor = DataProcessor()
