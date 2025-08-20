@@ -35,32 +35,34 @@ class ChartRequest:
     title: Optional[str] = None
     filters: Dict[str, Any] = None
 
-# Define pydantic models for the agents
-class ColumnMapping(BaseModel):
-    """Mapping from user request to data columns"""
-    explanation: str = Field(..., description="Detailed explanation of the column mapping and why it makes sense")
-    x_column: Optional[str] = None
-    y_column: Optional[str] = None
-    color_column: Optional[str] = None
-    size_column: Optional[str] = None
-    filters: Dict[str, Any] = Field(default_factory=dict)
 
-class ChartTypeSelection(BaseModel):
-    """Chart type selection with confidence and reasoning"""
-    chart_type: str = Field(..., description="The selected chart type (bar, line, scatter, pie, etc.)")
-    confidence: float = Field(..., ge=0, le=100, description="Confidence score (0-100)")
-    reasoning: str = Field(..., description="Detailed reasoning for this chart type selection")
+# Only define Pydantic models if pydantic is available
+if PYDANTIC_AI_AVAILABLE:
+    class ColumnMapping(BaseModel):
+        """Mapping from user request to data columns"""
+        explanation: str = Field(..., description="Detailed explanation of the column mapping and why it makes sense")
+        x_column: Optional[str] = None
+        y_column: Optional[str] = None
+        color_column: Optional[str] = None
+        size_column: Optional[str] = None
+        filters: Dict[str, Any] = Field(default_factory=dict)
 
-class FinalChartConfiguration(BaseModel):
-    """Final chart configuration combining all elements"""
-    chart_type: str
-    x_column: Optional[str] = None
-    y_column: Optional[str] = None
-    color_column: Optional[str] = None
-    size_column: Optional[str] = None
-    title: str
-    filters: Optional[Dict[str, Any]] = None
-    reasoning: str = Field(..., description="Final explanation of the complete chart setup")
+    class ChartTypeSelection(BaseModel):
+        """Chart type selection with confidence and reasoning"""
+        chart_type: str = Field(..., description="The selected chart type (bar, line, scatter, pie, etc.)")
+        confidence: float = Field(..., ge=0, le=100, description="Confidence score (0-100)")
+        reasoning: str = Field(..., description="Detailed reasoning for this chart type selection")
+
+    class FinalChartConfiguration(BaseModel):
+        """Final chart configuration combining all elements"""
+        chart_type: str
+        x_column: Optional[str] = None
+        y_column: Optional[str] = None
+        color_column: Optional[str] = None
+        size_column: Optional[str] = None
+        title: str
+        filters: Optional[Dict[str, Any]] = None
+        reasoning: str = Field(..., description="Final explanation of the complete chart setup")
 
 class OpenAIAssistant:
     """OpenAI-powered AI Assistant using PydanticAI"""
