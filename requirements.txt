@@ -28,3 +28,4 @@ flask
 markdown
 pyyaml
 python-dateutil
+pyarrow
