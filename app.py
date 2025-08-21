@@ -1183,29 +1183,53 @@ def handle_chat_message(n_clicks, message, session_data, column_metadata, curren
             if chart_request and chart_request.chart_type:
                 print(f"AI parsed request: {chart_request}")
 
+                # --- Column Mapping Validation and Auto-correction ---
+                def column_exists(col):
+                    return col is not None and col in df.columns
+
+                auto_corrected = False
+                # Try to auto-correct x_column
+                if chart_request.x_column and not column_exists(chart_request.x_column):
+                    for col in df.columns:
+                        if col.lower() == chart_request.x_column.lower():
+                            chart_request.x_column = col
+                            auto_corrected = True
+                            break
+                # Try to auto-correct y_column
+                if chart_request.y_column and not column_exists(chart_request.y_column):
+                    for col in df.columns:
+                        if col.lower() == chart_request.y_column.lower():
+                            chart_request.y_column = col
+                            auto_corrected = True
+                            break
+                # Try to auto-correct color_column
+                if chart_request.color_column and not column_exists(chart_request.color_column):
+                    for col in df.columns:
+                        if col.lower() == chart_request.color_column.lower():
+                            chart_request.color_column = col
+                            auto_corrected = True
+                            break
+
+                # If still not found, fallback to first/second column
+                if chart_request.x_column and not column_exists(chart_request.x_column):
+                    chart_request.x_column = df.columns[0]
+                    auto_corrected = True
+                if chart_request.y_column and not column_exists(chart_request.y_column):
+                    chart_request.y_column = df.columns[1] if len(df.columns) > 1 else df.columns[0]
+                    auto_corrected = True
+
                 # Handle specific count-based chart requests
                 if chart_request.y_column == 'count' or (
                     chart_request.filters and chart_request.filters.get('aggregation') == 'count'):
-                    # Force a proper count aggregation
                     print("Detected count-based chart request, setting up proper aggregation")
-                    
-                    # Create a pre-aggregated DataFrame for count-based charts
                     if chart_request.x_column in df.columns:
-                        # Use value_counts for simple count aggregation
                         value_counts = df[chart_request.x_column].value_counts().reset_index()
                         value_counts.columns = [chart_request.x_column, 'count']
-                        
-                        # Replace the original dataframe with the pre-aggregated one
                         df_to_use = value_counts
-                        
-                        # Make sure the chart config knows to use the 'count' column
                         chart_request.y_column = 'count'
-                        
-                        # Ensure the chart config knows this is a count aggregation
                         if not chart_request.filters:
                             chart_request.filters = {}
                         chart_request.filters['aggregation'] = 'count'
-                        
                         print(f"Created count-based dataframe with columns: {df_to_use.columns.tolist()}")
                         print(f"Sample data: {df_to_use.head(3).to_dict('records')}")
                     else:
@@ -1221,6 +1245,8 @@ def handle_chat_message(n_clicks, message, session_data, column_metadata, curren
                 fig = chart_generator.create_chart(df_to_use, chart_config)
 
                 # Generate insight/summary - make sure to use the same dataframe used for the chart
+                if 'filters' not in chart_config or chart_config['filters'] is None:
+                    chart_config['filters'] = {}
                 insight = chart_generator.generate_insight(df_to_use, chart_config)
 
                 # Add chart to library, including insight
@@ -1254,7 +1280,17 @@ def handle_chat_message(n_clicks, message, session_data, column_metadata, curren
                     ], className="d-flex")
                 ], className="chat-message ai-message mb-2")
 
-                current_history = current_history + [user_msg, ai_msg]
+                # If auto-corrected, add a note
+                if auto_corrected:
+                    note_msg = html.Div([
+                        html.Div([
+                            html.Span("AI", className="fw-bold me-2"),
+                            html.Span("Note: I auto-corrected the columns to best match your request.")
+                        ], className="d-flex")
+                    ], className="chat-message ai-message note-message mb-2")
+                    current_history = current_history + [user_msg, note_msg, ai_msg]
+                else:
+                    current_history = current_history + [user_msg, ai_msg]
                 
             else:
                 # Failed to parse
