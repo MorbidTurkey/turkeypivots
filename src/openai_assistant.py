@@ -1,7 +1,7 @@
 """
 OpenAI-powered AI Assistant for Turkey Pivots
 """
-#
+
 import os
 import json
 import time
