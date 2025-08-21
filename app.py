@@ -1183,12 +1183,26 @@ def handle_chat_message(n_clicks, message, session_data, column_metadata, curren
             if chart_request and chart_request.chart_type:
                 print(f"AI parsed request: {chart_request}")
 
-                # --- Column Mapping Validation and Auto-correction ---
+
+                # --- Hard Fallback: Use exact column names from user message if present ---
                 def column_exists(col):
                     return col is not None and col in df.columns
 
                 auto_corrected = False
-                # Try to auto-correct x_column
+                user_message_lower = message.lower()
+                # Find all columns mentioned in the user message
+                mentioned_cols = [col for col in df.columns if col.lower() in user_message_lower]
+                # If two or more columns are mentioned, use them for x and y
+                if len(mentioned_cols) >= 2:
+                    chart_request.x_column = mentioned_cols[1]  # domain in 'count of LLM per domain'
+                    chart_request.y_column = mentioned_cols[0]  # LLM in 'count of LLM per domain'
+                    auto_corrected = True
+                elif len(mentioned_cols) == 1:
+                    # If only one column is mentioned, use it as x_column
+                    chart_request.x_column = mentioned_cols[0]
+                    auto_corrected = True
+
+                # If not set by above, try to auto-correct x_column
                 if chart_request.x_column and not column_exists(chart_request.x_column):
                     for col in df.columns:
                         if col.lower() == chart_request.x_column.lower():
