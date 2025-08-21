@@ -1184,58 +1184,60 @@ def handle_chat_message(n_clicks, message, session_data, column_metadata, curren
                 print(f"AI parsed request: {chart_request}")
 
 
-                # --- Hard Fallback: Use exact column names from user message if present ---
+                # --- Improved column mapping and aggregation logic ---
                 def column_exists(col):
                     return col is not None and col in df.columns
 
-                auto_corrected = False
                 user_message_lower = message.lower()
-                # Find all columns mentioned in the user message
                 mentioned_cols = [col for col in df.columns if col.lower() in user_message_lower]
                 # If two or more columns are mentioned, use them for x and y
                 if len(mentioned_cols) >= 2:
-                    chart_request.x_column = mentioned_cols[1]  # domain in 'count of LLM per domain'
-                    chart_request.y_column = mentioned_cols[0]  # LLM in 'count of LLM per domain'
-                    auto_corrected = True
+                    chart_request.x_column = mentioned_cols[1]
+                    chart_request.y_column = mentioned_cols[0]
                 elif len(mentioned_cols) == 1:
-                    # If only one column is mentioned, use it as x_column
                     chart_request.x_column = mentioned_cols[0]
-                    auto_corrected = True
 
-                # If not set by above, try to auto-correct x_column
-                if chart_request.x_column and not column_exists(chart_request.x_column):
-                    for col in df.columns:
-                        if col.lower() == chart_request.x_column.lower():
-                            chart_request.x_column = col
-                            auto_corrected = True
-                            break
-                # Try to auto-correct y_column
-                if chart_request.y_column and not column_exists(chart_request.y_column):
-                    for col in df.columns:
-                        if col.lower() == chart_request.y_column.lower():
-                            chart_request.y_column = col
-                            auto_corrected = True
-                            break
-                # Try to auto-correct color_column
-                if chart_request.color_column and not column_exists(chart_request.color_column):
-                    for col in df.columns:
-                        if col.lower() == chart_request.color_column.lower():
-                            chart_request.color_column = col
-                            auto_corrected = True
-                            break
+                # Auto-correct x/y/color columns (case-insensitive)
+                for attr in ['x_column', 'y_column', 'color_column']:
+                    val = getattr(chart_request, attr, None)
+                    if val and not column_exists(val):
+                        for col in df.columns:
+                            if col.lower() == val.lower():
+                                setattr(chart_request, attr, col)
+                                break
 
-                # If still not found, fallback to first/second column
+                # Fallback to first/second column if not found
                 if chart_request.x_column and not column_exists(chart_request.x_column):
                     chart_request.x_column = df.columns[0]
-                    auto_corrected = True
                 if chart_request.y_column and not column_exists(chart_request.y_column):
                     chart_request.y_column = df.columns[1] if len(df.columns) > 1 else df.columns[0]
-                    auto_corrected = True
 
-                # Handle specific count-based chart requests
-                if chart_request.y_column == 'count' or (
-                    chart_request.filters and chart_request.filters.get('aggregation') == 'count'):
-                    print("Detected count-based chart request, setting up proper aggregation")
+                # --- Aggregation logic based on user request ---
+                agg_keywords = {
+                    'count': ['count', 'number of', 'how many', 'frequency', 'distribution'],
+                    'sum': ['sum', 'total', 'add up', 'aggregate'],
+                    'mean': ['average', 'mean', 'avg'],
+                    'min': ['minimum', 'lowest', 'smallest', 'min'],
+                    'max': ['maximum', 'highest', 'largest', 'max']
+                }
+                aggregation = None
+                for agg, keywords in agg_keywords.items():
+                    if any(kw in user_message_lower for kw in keywords):
+                        aggregation = agg
+                        break
+
+                # If y_column is a string/categorical, default to count
+                if not aggregation:
+                    if chart_request.y_column and str(df[chart_request.y_column].dtype) in ['object', 'category']:
+                        aggregation = 'count'
+
+                # If y_column is numeric and aggregation is not set, default to sum
+                if not aggregation:
+                    if chart_request.y_column and pd.api.types.is_numeric_dtype(df[chart_request.y_column]):
+                        aggregation = 'sum'
+
+                # If user explicitly asked for count or y_column is 'count', do value_counts
+                if aggregation == 'count' or (chart_request.y_column and chart_request.y_column.lower() == 'count'):
                     if chart_request.x_column in df.columns:
                         value_counts = df[chart_request.x_column].value_counts().reset_index()
                         value_counts.columns = [chart_request.x_column, 'count']
@@ -1244,24 +1246,40 @@ def handle_chat_message(n_clicks, message, session_data, column_metadata, curren
                         if not chart_request.filters:
                             chart_request.filters = {}
                         chart_request.filters['aggregation'] = 'count'
-                        print(f"Created count-based dataframe with columns: {df_to_use.columns.tolist()}")
-                        print(f"Sample data: {df_to_use.head(3).to_dict('records')}")
                     else:
                         df_to_use = df
-                        print(f"Warning: Cannot create count aggregation, x_column '{chart_request.x_column}' not found")
+                elif aggregation in ['sum', 'mean', 'min', 'max'] and chart_request.x_column and chart_request.y_column:
+                    # Group by x_column and aggregate y_column
+                    if chart_request.x_column in df.columns and chart_request.y_column in df.columns:
+                        grouped = df.groupby(chart_request.x_column)[chart_request.y_column]
+                        if aggregation == 'sum':
+                            agg_df = grouped.sum().reset_index()
+                        elif aggregation == 'mean':
+                            agg_df = grouped.mean().reset_index()
+                        elif aggregation == 'min':
+                            agg_df = grouped.min().reset_index()
+                        elif aggregation == 'max':
+                            agg_df = grouped.max().reset_index()
+                        agg_df.columns = [chart_request.x_column, chart_request.y_column]
+                        df_to_use = agg_df
+                        if not chart_request.filters:
+                            chart_request.filters = {}
+                        chart_request.filters['aggregation'] = aggregation
+                    else:
+                        df_to_use = df
                 else:
                     df_to_use = df
 
                 # Convert ChartRequest to dictionary format for chart generator
                 chart_config = create_chart_config(chart_request, df_to_use, column_metadata)
 
-                # Create the chart - use the pre-aggregated dataframe
-                fig = chart_generator.create_chart(df_to_use, chart_config)
-
-                # Generate insight/summary - make sure to use the same dataframe used for the chart
+                # Generate insight/summary first
                 if 'filters' not in chart_config or chart_config['filters'] is None:
                     chart_config['filters'] = {}
                 insight = chart_generator.generate_insight(df_to_use, chart_config)
+
+                # Then create the chart
+                fig = chart_generator.create_chart(df_to_use, chart_config)
 
                 # Add chart to library, including insight
                 chart_library = chart_library or []
@@ -1294,17 +1312,7 @@ def handle_chat_message(n_clicks, message, session_data, column_metadata, curren
                     ], className="d-flex")
                 ], className="chat-message ai-message mb-2")
 
-                # If auto-corrected, add a note
-                if auto_corrected:
-                    note_msg = html.Div([
-                        html.Div([
-                            html.Span("AI", className="fw-bold me-2"),
-                            html.Span("Note: I auto-corrected the columns to best match your request.")
-                        ], className="d-flex")
-                    ], className="chat-message ai-message note-message mb-2")
-                    current_history = current_history + [user_msg, note_msg, ai_msg]
-                else:
-                    current_history = current_history + [user_msg, ai_msg]
+                current_history = current_history + [user_msg, ai_msg]
                 
             else:
                 # Failed to parse
